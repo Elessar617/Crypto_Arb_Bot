@@ -1,16 +1,17 @@
 # config/config.py
 """
-Configuration loader for Crypto-Arb-Bot
+Configuration loader for Crypto-Arb-Bot.
 
 Adheres to:
  - NASA Req IDs: REQ-01 (load config), REQ-02 (validate fields)
  - Power-of-Ten: fixed-bounds checks, minimal dynamic allocation
  - UNIX: single responsibility, pure interfaces
 """
-from dataclasses import dataclass
-import toml
 import os
-from typing import Any, Dict, Optional, Union
+from dataclasses import dataclass
+from typing import Any, Dict, List, Optional
+
+import toml
 
 CONFIG_PATH_ENV = "ARBBOT_CONFIG"
 DEFAULT_CONFIG_FILE = os.path.join(os.getcwd(), "config.toml")
@@ -23,7 +24,16 @@ class ConfigError(Exception):
 
 @dataclass(frozen=True)
 class Config:
-    market_pairs: list[str]
+    """Immutable configuration container with validated settings.
+    
+    Attributes:
+        market_pairs: List of market pair symbols to monitor
+        max_cycles: Maximum number of trading cycles to perform
+        fetch_interval: Time between market data fetches in seconds
+        min_spread: Minimum profit spread percentage to execute trades
+        max_retries: Maximum number of retry attempts for network operations
+    """
+    market_pairs: List[str]
     max_cycles: int
     fetch_interval: float
     min_spread: float
@@ -31,7 +41,17 @@ class Config:
 
 
 def _read_config_file(path: str) -> Dict[str, Any]:
-    """Read and parse the TOML file at given path."""
+    """Read and parse the TOML file at given path.
+    
+    Args:
+        path: Path to the TOML configuration file
+        
+    Returns:
+        Parsed configuration dictionary
+        
+    Raises:
+        ConfigError: When file doesn't exist or cannot be parsed
+    """
     if not os.path.isfile(path):
         raise ConfigError(f"Config file not found: {path}")  # REQ-02a
     try:
@@ -41,7 +61,17 @@ def _read_config_file(path: str) -> Dict[str, Any]:
 
 
 def _validate_config(data: Dict[str, Any]) -> Config:
-    """Validate raw config data and return a Config object."""
+    """Validate raw config data and return a Config object.
+    
+    Args:
+        data: Dictionary containing configuration values
+        
+    Returns:
+        Validated Config object with proper types and bounds
+        
+    Raises:
+        ConfigError: When validation fails for any field
+    """
     # Extract raw values
     pairs = data.get("market_pairs")
     cycles = data.get("max_cycles")
