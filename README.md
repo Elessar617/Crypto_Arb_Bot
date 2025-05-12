@@ -131,6 +131,35 @@ bandit -r src
 pytest --cov=src tests/
 ```
 
+## Testing & CI
+
+### Testing Strategy
+
+- **Unit Tests**: One test module per service, fixtures with fixed data, each test has ≥2 assert calls.
+- **Integration Tests**: Spin up a dummy HTTP server (e.g. aiohttp test server), run one full `Engine.run_cycle()`.
+
+### CI Pipeline
+
+```bash
+# Check code formatting
+black --check .
+
+# Run linting
+flake8 --max-line-length=88 src/ tests/
+
+# Type checking
+mypy src/
+
+# Security checks
+bandit -r src/
+
+# Run tests, fail fast
+pytest --maxfail=1 --durations=10
+
+# Measure coverage
+coverage run -m pytest && coverage report --fail-under=90
+```
+
 ### Implementation Requirements
 
 Each module and function adheres to these principles:
