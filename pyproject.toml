@@ -1,0 +1,119 @@
+[build-system]
+requires = ["setuptools>=65.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "crypto_arb_bot"
+version = "0.1.0"
+description = "Cryptocurrency arbitrage trading bot following NASA coding standards, UNIX philosophy, and The Power of 10 Rules"
+requires-python = ">=3.10"
+license = {text = "Proprietary"}
+authors = [
+    {name = "Elessar"},
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Intended Audience :: Financial and Insurance Industry",
+    "Topic :: Office/Business :: Financial :: Investment",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "ccxt>=3.0.0", # Cryptocurrency exchange API
+    "numpy>=1.24.0",
+    "pandas>=2.0.0",
+    "pydantic>=2.0.0", # Data validation
+    "pycryptodome>=3.18.0", # Secure data encryption
+    "python-dotenv>=1.0.0", # Environment management
+    "cryptography>=41.0.0", # Secure credential storage
+    "aiohttp>=3.8.0", # Async HTTP client
+    "tenacity>=8.2.0", # Retry logic
+]
+
+[project.optional-dependencies]
+dev = [
+    "black>=23.7.0",
+    "flake8>=6.1.0",
+    "mypy>=1.5.0",
+    "isort>=5.12.0",
+    "bandit>=1.7.5",
+    "pre-commit>=3.4.0",
+]
+test = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "pytest-mock>=3.11.1",
+    "pytest-asyncio>=0.21.1",
+    "types-requests",
+    "hypothesis>=6.82.0",
+]
+
+# Black configuration (NASA consistent formatting)
+[tool.black]
+line-length = 88
+target-version = ['py310', 'py311', 'py312']
+include = '\\.pyi?$'
+extend-exclude = ''
+
+# isort configuration
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+
+# mypy configuration (Power of 10 rule #10: strict checking)
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+strict_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+
+# pytest configuration
+[tool.pytest.ini_options]
+minversion = "7.0"
+testpaths = ["tests"]
+python_files = "test_*.py"
+python_classes = "Test*"
+python_functions = "test_*"
+addopts = "--strict-markers -v"
+asyncio_mode = "strict"
+
+# Coverage configuration
+[tool.coverage.run]
+source = ["src"]
+omit = ["tests/*"]
+branch = true
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "pass",
+    "raise ImportError",
+]
+ignore_errors = true
+fail_under = 90
+
+# Bandit configuration
+[tool.bandit]
+# B101 = assert statements
+exclude_tests = true
+skips = ["B101"]
+targets = ["src"]
