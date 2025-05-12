@@ -16,6 +16,18 @@ This application monitors cryptocurrency exchanges to identify and execute profi
 3. **Trade Execution**: Execute profitable trades with bounded retry logic and proper error handling
 4. **System Monitoring**: Health checks and performance metrics throughout the execution pipeline
 
+## Why This Design?
+
+- **Lean & Focused**: Each file <200 lines, each public function <60 lines, small, single‐responsibility modules.
+
+- **Fixed‐Bounds & No Heap Surprises**: Pre-allocated buffers, explicit retry loops.
+
+- **Assertions Everywhere**: Two per function to satisfy NASA's runtime-assert rule.
+
+- **Composability**: `cli.py` simply wires together independent modules. You can import crypto_arb_bot as a library or chain its commands in a shell pipeline.
+
+- **Robust Toolchain**: mypy, black, flake8, bandit, pytest, coverage all enforced in CI ensure you never merge regressions.
+
 ## Key Features
 
 - **Real-time market monitoring** across multiple exchanges (Coinbase, Kraken, Gemini, Bitstamp)
