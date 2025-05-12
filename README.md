@@ -310,6 +310,18 @@ crypto_arb_bot/
     └── github.yml            # CI: black, flake8, mypy, bandit, pytest, coverage
 ```
 
+## Development Plan
+
+### Slice by Slice
+
+- **Sprint 1**: Wire up config, credentials, and cli.py so `arbbot --help` works.
+
+- **Sprint 2**: Build and test fetcher + scanner with dummy data.
+
+- **Sprint 3**: Hook up executor, add a dry-run mode, and write integration tests.
+
+- **Sprint 4**: Add health_check, finalize engine, reach ≥90% coverage.
+
 ## License
 
 Proprietary. All rights reserved.
