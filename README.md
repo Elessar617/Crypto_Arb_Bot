@@ -28,6 +28,100 @@ This application monitors cryptocurrency exchanges to identify and execute profi
 
 - **Robust Toolchain**: mypy, black, flake8, bandit, pytest, coverage all enforced in CI ensure you never merge regressions.
 
+### Lessons Learned: Issues in the Previous Implementation
+
+#### Monolithic Functions & Unbounded Loops
+
+- **Core loops** (`while True`) with dynamic lists lead to runaway execution and memory growth.
+
+- **Large functions** (> 80–120 lines) mix I/O, business logic, and logging—all in one place.
+
+#### Lack of Runtime Assertions
+
+- **Critical invariants** (price ≥ 0, nonempty lists, valid return values) are unchecked, so corrupted data can snowball.
+
+#### Plaintext Credentials & Global State
+
+- **Storing API keys** in state/credentials.json is a security liability.
+
+- **Credential values** live at module scope with no encapsulation or validation on load.
+
+#### Scattered Config & No Validation
+
+- **Config lives in multiple places** (pyproject.toml, custom requirements.txt, ad-hoc YAML/JSON in code) with no central loader and no assertion-driven checks.
+
+#### Inconsistent Project Layout
+
+- **No standard src/ directory** → you can't simply pip install ..
+
+- **Virtual-env committed in repo**; hidden files and caches clutter version control.
+
+#### Partial or Missing CI Enforcement
+
+- **Some tools pass, some fail**; coverage sits at ~86% but isn't gated, so regressions slip in.
+
+- **Commit hooks don't enforce** atomic, single-purpose commits or style.
+
+#### Poor Composability & UNIX-Unfriendly I/O
+
+- **Scripts under tools/ use input()** rather than argparse → impossible to chain in shell pipelines.
+
+- **Lack of clear exit codes** makes automation fragile.
+
+#### Heap-Heavy Data Structures
+
+- **Building large snapshots lists** every cycle without reuse or caps leads to high memory churn.
+
+### Advantages of the New "Lean & Robust" Layout
+
+#### Clear Separation of Concerns
+
+- **Config in its own package** (`config/config.py`) → strict validation, two asserts per function, frozen dataclass.
+
+- **CLI vs Library** (`cli.py` vs package under `src/crypto_arb_bot/`) → you get both a user-friendly tool and a composable importable library.
+
+#### Fixed-Bound Loops & Pre-Allocated Buffers
+
+- **Hot paths** (fetcher, scanner) use pre-sized lists or deques and `for … in range(N)` only.
+
+- **No more `while True`** or dynamically growing buffers that risk runaway memory usage.
+
+#### Mandatory Runtime Assertions
+
+- **Every public function ≤ 60 lines**, with at least two assert statements guarding inputs and outputs.
+
+- **NASA-grade enforcement** of invariants catches corrupt or unexpected data early.
+
+#### Secure Credential Management
+
+- **No plaintext JSON** in state/—all secrets come from OS keyring or environment variables.
+
+- **Eliminates a major security risk** in today's codebase.
+
+#### Modular, Test-Friendly Design
+
+- **One test file per module**, each with ≥ 2 assertions, plus integration tests that spin up a real (or mock) event loop.
+
+- **CI pipeline hooks every tool**—mypy, black, flake8, bandit, pytest, coverage—so regressions can't sneak in.
+
+#### Pip-Installable, PEP-Compliant Project Layout
+
+- **`pyproject.toml`** with metadata and tooling config lives at the root.
+
+- **`src/crypto_arb_bot/`** ensures you get a clean installable package, avoiding namespace pollution.
+
+#### Single-Responsibility Utilities
+
+- **Small helper modules** (`utils.py`, `errors.py`) instead of giant scripts in tools/.
+
+- **CLI subcommands** (scan, execute, healthcheck) each live in their own handler.
+
+#### Composable I/O & UNIX-Friendly Interfaces
+
+- **Outputs via JSON-Lines or CSV** on stdout, exit codes on failures—ready for grep/awk/jq pipelines.
+
+- **No hidden side-effects or global state**; you can pipe scan output into another tool without side-loading your code.
+
 ## Key Features
 
 - **Real-time market monitoring** across multiple exchanges (Coinbase, Kraken, Gemini, Bitstamp)
